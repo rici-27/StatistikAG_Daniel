@@ -470,7 +470,7 @@ ggplot(data.frame(x, y, label), aes(x, y, color = label)) +
 #--Illustrate the ratios of these squared norms of estimation errors in a plot.
 
 #? p not divide by 10???
-p_vector <- 1:10
+p_vector <- (1:10)*10
 
 n<-100
 
@@ -483,7 +483,6 @@ for (i in 1:p_vector[length(p_vector)]){
     else {
       sigma_max[i,j]<-0.1
     }
-    
   }
 }
 
@@ -495,13 +494,15 @@ expectation_task_4 <- rep(0, p_vector[length(p_vector)])
 #the observations
 X_transposed_max <- mvrnorm(n = n, mu = expectation_task_4, Sigma = sigma_max)
 
-
+# besser: monte carlo?
 
 #squared Frobenius norm of error
 estimation_error_task_4 <- array(NA, dim = c(length(p_vector),2))  # first column is sample cov, second shrinkage estimation error
 
 counter<-0
 
+# mal mit monte carlo machen
+# mittlere abweichung -> ratios
 for (p in p_vector){
   
   counter <- counter + 1
@@ -543,7 +544,7 @@ for (p in p_vector){
   #Theorem 3.4
   sigma_opt_feasible <- w_op *gamma_est *diag(p) + (1-w_op) * S_n
   
-  help_shrink <- solve(sigma_opt_feasible) - S_n_inv
+  help_shrink <- solve(sigma_opt_feasible) - sigma_p_inv
   estimation_error_task_4[counter,2] <-sum(diag(help_shrink %*% t(help_shrink)))/p 
   
   
@@ -559,6 +560,8 @@ for (p in p_vector){
 x <- p_vector
 
 y <- estimation_error_task_4[,2]/estimation_error_task_4[,1]
+estimation_error_task_4
+View(estimation_error_task_4)
 label = rep("ratio error shrinkage/error sampel cov", M)
 
 ggplot(data.frame(x, y, label), aes(x, y, color = label)) + 
@@ -578,15 +581,15 @@ ggplot(data.frame(x, y, label), aes(x, y, color = label)) +
 
 #--(e) Download the data Stock Bond 2004 to 2006.csv from the WueCampus site 
 #--and extract the returns, i.e. the differences of log-prices for each of the 8 stocks. 
-#--We analyse the plugin portfolio built upon the optimal weights and estimating ?????1 with the sample covariance matrix 
+#--We analyse the plug in portfolio built upon the optimal weights and estimating ?????1 with the sample covariance matrix 
 #--and compare to a portfolio for that we estimate ?? ???1 with the feasible shrinkage estimator. 
 #--Moreover, we compare to a benchmark portfolio with constantly equal weight 1/8 on each asset. 
 #--Use the data over 336 days backwards as a training sample to estimate ?????1 , assuming it is constant and i.i.d. observations. 
 #--We can then compute and compare the three portfolios for 336 days. 
 #--Compare the overall returns of the three portfolios.
 
-data_task_5 <- read.csv("C:\\Users\\Daniel\\Desktop\\R_Statistik AG\\Sheet_5\\Stock_Bond_2004_to_2006.csv")
-#View(head(data_task_5))
+data_task_5 <- read.csv("Stock_Bond_2004_to_2006.csv")
+View(head(data_task_5))
 #str(data_task_5)
 #colnames(data_task_5)
 
@@ -634,12 +637,14 @@ final_data_task_5 <- almost_final_data_task_5[-1,]#delete NA row
 #View(final_data_task_5)
 
 final_matrix_task_5 <- as.matrix(final_data_task_5[, -1]) #delte DATE column
-#View(final_matrix_task_5)
+View(final_matrix_task_5)
 #dim(final_matrix_task_5) # 672  11
 
 days<-336
 p <- 11
 n <- days
+
+# immer die letzten 336 tage oder mehr? fenster konstant?
 
 sigma_inv_task_5 <- array(NA, dim = c(2, days, p, p))
 w_opt_plugin_task_5 <- array(NA, dim = c(3, days, p))
@@ -707,6 +712,8 @@ for (i in 1:days){
   
   
 }
+
+# plot bauen: verlauf über die tage 
 
 print(paste("Overall return for sample cov: " ,  as.character(overall_return_sample_cov) , " ."))
 print(paste("Overall return for shrinkage: " ,  as.character(overall_return_shrinkage) , " ."))
